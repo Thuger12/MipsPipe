@@ -8,9 +8,13 @@
 
 module regfile(input logic clk,
 					input logic writeenable,
-					input logic [4:0] ra1, ra2, ra3,
+					input logic [4:0] ra1, 
+					input logic [4:0] ra2, 
+					input logic [4:0] ra3,
 					input logic [31:0] wd3,
-					output logic [31:0] rd1, rd2);
+					
+					output logic [31:0] rd1, 
+					output logic [31:0] rd2);
 	// Register matrices stores 32 of 32bits
 	logic [31:0] regf [31:0];
 	
@@ -24,7 +28,8 @@ module regfile(input logic clk,
 endmodule
 
 
-module adder (input logic [31:0] a, b,
+module adder (input logic [31:0] a, 
+              input logic [31:0] b,
 				  output logic [31:0] sum);
 	assign sum = a + b;
 endmodule
@@ -51,7 +56,8 @@ module signalFlopper(input logic clk, reset,
 endmodule
 
 module flopper # (parameter WIDTH = 8)
-					  (input logic clk, reset,
+					  (input logic clk, 
+					   input logic reset,
 						input logic [WIDTH-1:0] d,
 						output logic [WIDTH-1:0] q);
 						
@@ -62,16 +68,18 @@ endmodule
 
 // Multipleksor 2 x 1
 module mux2 # (parameter WIDTH = 8)
-				  (input logic [WIDTH-1:0] a0, a1,
+				  (input logic [WIDTH-1:0] in1, 
+				   input logic [WIDTH-1:0] in2,
 				   input logic c,
-					output logic [WIDTH-1:0] d);
-	assign d = c ? a1 : a0;
+					output logic [WIDTH-1:0] out);
+	assign d = c ? in1 : in2;
 endmodule
 
 module alu # (parameter WIDTH = 8)
 				 (input logic [WIDTH-1:0] src_a, 
 				  input logic [WIDTH-1:0] src_b,
 				  input logic [2:0] control,
+				  
 				  output logic zero, 
 				  output logic overflow, 
 				  output logic [WIDTH-1:0] result);

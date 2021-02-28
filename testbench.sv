@@ -35,7 +35,7 @@ module top(input logic CLK,
 			  
 	logic [31:0] pc, readdata;
 	assign o_pc = pc;
-	mips 			mips(CLK, RESET, instr, readdata,
+	mips 			mips1(CLK, RESET, instr, readdata,
 						  pc, MEMWRITE, dataaddr, writedata);
 						  
 	datamemory  dmemory(CLK, MEMWRITE, dataaddr, writedata, readdata);

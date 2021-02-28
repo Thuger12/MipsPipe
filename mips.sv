@@ -24,14 +24,13 @@ module mips(input logic clk,
 				input logic [31:0] instr, 	  // Instruction from memory
 				input logic [31:0] readdata, // Data from memory
 				
-				output logic [31:0] pc,
 				output logic MEMWRITE,
+				output logic [31:0] pc,
 				output logic [31:0] aluresult,  // Memory adress where to write data
 				output logic [31:0] writedata); // Data to write to memory
 				
 	// Signals for execute stage
-	logic REGWRITE_E, MEMTOREG_E, MEMWRITE_E,
-		  BRANCH_E, ALUSRC_E, REGDST_E;
+	logic ALUSRC_E, REGDST_E;
 	logic [2:0] ALUCONTROL_E;
 	
 	// Signals for memory stage
@@ -60,8 +59,20 @@ module mips(input logic clk,
                       .BRANCH_M(BRANCH_M), .PCSRC_M(PCSRC_M),
 
                       .REGWRITE_WB(REGWRITE_WB), .MEMTOREG_WB(MEMTOREG_WB));
+							 
+	//********************
+	//** Pipeline stages **
+	//********************
+	
+	StageFetch fetch (.clk(clk),
+	                  .reset(reset),
+							.pcbranch(),
+							.PC_SRC(),
+							
+							.instr(),
+							.pcplus4())
 	 
-	datapath dp(.clk(clk), .reset(reset),
+	datapath dp(clk, reset,
                PCSRC_M,
 	            ALUCONTROL_E, ALUSRC_E, REGDST_E,
 					ZERO_M,

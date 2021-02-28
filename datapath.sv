@@ -1,14 +1,17 @@
-module datapath(input logic clk, reset,
+module datapath(input logic clk, 
+					 input logic reset,
                 input logic PCSRC_M,
                 //Signal on execute stage
                 input logic [2:0] ALUCONTROL_E,
-                input logic ALUSRC_E, REGDST_E,
+                input logic ALUSRC_E, 
+					 input logic REGDST_E,
 					 
                 // Signal on writememory stage
                 output logic o_ZERO_M,
 					 
                 // Signal on writeback stage
-                input logic REGWRITE_WB, MEMTOREG_WB,
+                input logic REGWRITE_WB, 
+					 input logic MEMTOREG_WB,
                 
                 input logic [31:0] instr,
                 input logic [31:0] readdata, // Data from memory
@@ -85,84 +88,13 @@ module datapath(input logic clk, reset,
 	 flopper # (32) memdata_Memory(clk, reset, readdata_M, readdata_WB);
 	 flopper # (5)  writereg_Memory(clk, reset, writereg_M, writereg_WB);
    
-	 // Choosing next pc
-	 logic [31:0] pcnext;
-	 
-    mux2 # (32) m2(pcplus4_F, pcbranch_M, PCSRC_M, pcnext);
-	 
-    flopper # (32) next_pc(clk, reset, pcnext, pc_F); 
-	 
-	 StageFetch   fetch  (pc_F, pcplus4_F);
-	 
-    StageDecode  decode (clk, reset, instr_D,
-                         REGWRITE_WB, result_WB, writereg_WB,
-                         reg1_D, reg2_D, signimm_D);
-    
-    StageExecute execute (clk, reset,
-                          ALUSRC_E, REGDST_E, ALUCONTROL_E,
-                          reg1_E, reg2_E, rt_E, rd_E,
-                          signimm_E, pcplus4_E,
-                          aluresult_E, ZERO_E,
-                          writereg_E, pcbranch_E);
-								  
-								  // Choose data to write into register
-    mux2 # (32) resultWB(aluresult_WB, readdata_WB, MEMTOREG_WB, result_WB);
+	
     
 endmodule
 
 
-module StageFetch(input logic [31:0] pc,
-                  output logic [31:0] pcplus4);
-   
-    adder   pcadder(pc, 32'b100, pcplus4);
-    
-endmodule
 
-module StageDecode(input logic clk, reset,
-                    input logic [31:0] instr,
-                    // From writeback stage
-                    input logic REGWRITE_WB,
-                    input logic [31:0] result_WB,
-                    input logic [4:0] writereg_WB,
-                   
-                    output logic [31:0] reg1, reg2,
-                    output logic [31:0] signimm_D);
 
-	regfile      regfile(clk, REGWRITE_WB, instr[25:21], 
-						      instr[20:16], writereg_WB,
-						      result_WB, reg1, reg2);
 
-    signextend  sext(instr[15:0], signimm_D);
-endmodule 
 
-module StageExecute(input logic clk, reset,
-                     // Signal
-                     input logic ALUSRC_E, REGDST_E,
-                     input logic [2:0] ALUCONTROL_E,
-                     // Data
-                     input logic [31:0] reg1, reg2,
-                     input logic [4:0] rt, rd,
-                     input logic [31:0] signimm, pcplus4,
 
-                     output logic [31:0] aluresult,
-                     output logic zero,
-
-                     output logic [4:0] writereg,
-                     output logic [31:0] pcbranch);
-
-    logic [31:0] srca, srcb;
-	 assign srca = reg1;
-    // CHoose between register and sign immediate value
-    mux2 # (32) p1(reg2, signimm, ALUSRC_E, srcb);
-
-    mux2 # (5) p2(rt, rd, REGDST_E, writereg);
-    
-    logic overflow;
-	 
-    alu # (32) alu12(srca, srcb, ALUCONTROL_E, zero, overflow, aluresult);
-
-    logic  [31:0] signimmsh;
-    shiftleft2 sh2(signimm, signimmsh);
-
-    adder pcadder(signimmsh, pcplus4, pcbranch);
-endmodule
