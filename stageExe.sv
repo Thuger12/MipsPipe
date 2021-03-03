@@ -1,9 +1,9 @@
-module stageExecute (input logic clk, 
+module stage_execute (input logic clk, 
                      input logic reset,
                      // Signal
-                     input logic ALUSRC, 
-							input logic REGDST,
-                     input logic [2:0] ALUCONTROL,
+                     input logic alusrc, 
+							input logic regdst,
+                     input logic [2:0] alucontrol,
                      // Data
                      input logic [31:0] reg1, 
 							input logic [31:0] reg2,
@@ -17,28 +17,30 @@ module stageExecute (input logic clk,
 							output logic overflow,
 
                      output logic [4:0] writereg,
+							output logic [31:0] writedata,
                      output logic [31:0] pcbranch);
 
     logic [31:0] srca, srcb;
 	 assign srca = reg1;
+	 assign writedata = reg2;
 	 
     // Choose between register and sign immediate value
     mux2 # (32) m1(.in1(reg2), 
 	                .in2(signimm), 
-						 .c(ALUSRC), 
+						 .c(alusrc), 
 						 .out(srcb));
 						 
     mux2 # (5) m2(.in1(rt), 
 	               .in2(rd), 
-						.c(REGDST), 
+						.c(regdst), 
 						.out(writereg));
 	 
     alu # (32) alu(.src_a(srca), 
 	                .src_b(srcb), 
-						 .control(ALUCONTROL_E), 
+						 .control(alucontrol), 
 						 .zero(zero), 
 						 .overflow(overflow), 
-						 .aluresult(aluresult));
+						 .result(aluresult));
 
     logic  [31:0] signimmsh;
 	 

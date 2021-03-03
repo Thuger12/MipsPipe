@@ -72,7 +72,7 @@ module mux2 # (parameter WIDTH = 8)
 				   input logic [WIDTH-1:0] in2,
 				   input logic c,
 					output logic [WIDTH-1:0] out);
-	assign d = c ? in1 : in2;
+	assign out = c ? in2 : in1;
 endmodule
 
 module alu # (parameter WIDTH = 8)

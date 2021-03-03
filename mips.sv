@@ -1,84 +1,157 @@
-/*
-Control signals:
--- MEMTOREG:
-				choose what to write into register(data from memory or aluresult)
--- MEMWRITE:
-				enable to write data into memory block
--- BRANCH:
-				for BEQ command
--- alucontrol [2:0]:
-				signal for alu module
--- ALUSRC:
-				choose between immediate value and register data
--- regdst:
-				choose destination register
--- REGWRITE:
-				enable to write into register file
--- jump:
-				for j command (26bits from instr, 4 bits of prev pc)
-*/ 
-
-
 module mips(input logic clk, 
-            input logic reset,
-				input logic [31:0] instr, 	  // Instruction from memory
-				input logic [31:0] readdata, // Data from memory
-				
-				output logic MEMWRITE,
-				output logic [31:0] pc,
-				output logic [31:0] aluresult,  // Memory adress where to write data
-				output logic [31:0] writedata); // Data to write to memory
+            input logic reset);
 				
 	// Signals for execute stage
-	logic ALUSRC_E, REGDST_E;
-	logic [2:0] ALUCONTROL_E;
+	logic alusrc_EXE, regdst_EXE;
+	logic [2:0] alucontrol_EXE;
 	
 	// Signals for memory stage
-	logic REGWRITE_M, MEMTOREG_M, MEMWRITE_M,
-			BRANCH_M, PCSRC_M;
-	logic ZERO_M;
-	assign MEMWRITE = MEMWRITE_M;
-	
+	logic memwrite_MEM, pcsrc_MEM;	
 
 	// Signals for writeback stage
-	logic REGWRITE_WB, MEMTOREG_WB;
+	logic regwrite_WB, memtoreg_WB;
 			
-   logic [31:0] instr_D;
-						  
-	controller control(.CLK(clk), .RESET(reset),
-                      .opcode(instr_D[31:26]), .funct(instr_D[5:0]), 
-							 .ZERO_M(ZERO_M),
-
-                      .REGWRITE_E(REGWRITE_E), .MEMTOREG_E(MEMTOREG_E), 
-							 .MEMWRITE_E(MEMWRITE_E),
-                      .BRANCH_E(BRANCH_E), .ALUSRC_E(ALUSRC_E), 
-							 .REGDST_E(REGDST_E), .ALUCONTROL_E(ALUCONTROL_E),
- 
-                      .REGWRITE_M(REGWRITE_M), .MEMTOREG_M(MEMTOREG_M), 
-							 .MEMWRITE_M(MEMWRITE_M),
-                      .BRANCH_M(BRANCH_M), .PCSRC_M(PCSRC_M),
-
-                      .REGWRITE_WB(REGWRITE_WB), .MEMTOREG_WB(MEMTOREG_WB));
-							 
-	//********************
-	//** Pipeline stages **
-	//********************
+  
+   logic [31:0] pcplus4_IF, instr_IF;
 	
-	StageFetch fetch (.clk(clk),
+	logic [31:0] instr_DEC, pcplus4_DEC;
+	logic [31:0] reg1_DEC, reg2_DEC, signimm_DEC;
+	logic [4:0] rt_DEC, rd_DEC;
+	
+	logic [31:0] reg1_EXE, reg2_EXE, signimm_EXE, pcplus4_EXE;
+	logic [4:0] rt_EXE, rd_EXE;
+	logic [4:0] writereg_EXE;
+	logic [31:0] aluresult_EXE, writedata_EXE, pcbranch_EXE;
+	logic zero_EXE, overflow_EXE;
+	
+	logic [31:0] aluresult_MEM, writedata_MEM, pcbranch_MEM;
+	logic [4:0] writereg_MEM;
+   logic [31:0] readdata_MEM;
+	logic zero_MEM;
+	
+	logic [31:0] aluresult_WB, readdata_WB;
+   logic [31:0] result_WB;
+   logic [4:0]  writereg_WB;
+						  
+	controller control(.clk(clk),
+	                   .reset(reset),
+							 .opcode(instr_DEC[31:26]),
+							 .funct(instr_DEC[5:0]),
+							 .zero_MEM(zero_MEM),
+							 .alusrc_EXE(alusrc_EXE),
+							 .regdst_EXE(regdst_EXE),
+							 .alucontrol_EXE(alucontrol_EXE),
+							 .memwrite_MEM(memwrite_MEM),
+							 .pcsrc_MEM(pcsrc_MEM),
+							 .regwrite_WB(regwrite_WB),
+							 .memtoreg_WB(memtoreg_WB));
+	//
+   // Latching pipeline results
+   // 
+	latch_fetch latch_fetch (.clk(clk),
+	                         .reset(reset),
+							 .instr_IF(instr_IF),
+							 .pcplus4_IF(pcplus4_IF),
+							 
+							 .instr_DEC(instr_DEC),
+							 .pcplus4_DEC(pcplus4_DEC));
+	
+	latch_decode latch_decode (.clk(clk),
+	                     .reset(reset),
+								.reg1_DEC(reg1_DEC),
+								.reg2_DEC(reg2_DEC),
+								.rt_DEC(rt_DEC),
+								.rd_DEC(rd_DEC),
+								.signimm_DEC(signimm_DEC),
+								.pcplus4_DEC(pcplus4_DEC),
+								
+								.reg1_EXE(reg1_EXE),
+								.reg2_EXE(reg2_EXE),
+								.rt_EXE(rt_EXE),
+								.rd_EXE(rd_EXE),
+								.signimm_EXE(signimm_EXE),
+								.pcplus4_EXE(pcplus4_EXE));
+								
+	latch_execute latch_execute (.clk(clk),
+	                       .reset(reset),
+								  .zero_EXE(zero_EXE),
+								  .aluresult_EXE(aluresult_EXE),
+								  .writedata_EXE(writedata_EXE),
+								  .writereg_EXE(writereg_EXE),
+								  .pcbranch_EXE(pcbranch_EXE),
+								  
+								  .zero_MEM(zero_MEM),
+								  .aluresult_MEM(aluresult_MEM),
+								  .writedata_MEM(writedata_MEM),
+								  .writereg_MEM(writereg_MEM),
+								  .pcbranch_MEM(pcbranch_MEM));
+								  
+	latch_memory latch_mem (.clk(clk),
+	                        .reset(reset),
+									.aluresult_MEM(aluresult_MEM),
+									.readdata_MEM(readdata_MEM),
+									.writereg_MEM(writereg_MEM),
+									
+									.aluresult_WB(aluresult_WB),
+									.readdata_WB(readdata_WB),
+									.writereg_WB(writereg_WB));
+	//
+	// Pipeline stages
+	//
+	
+
+	
+	stage_fetch fetch (.clk(clk),
 	                  .reset(reset),
-							.pcbranch(),
-							.PC_SRC(),
+							.pcbranch(pcbranch_MEM),
+							.pcsrc(pcsrc_MEM),
 							
-							.instr(),
-							.pcplus4())
-	 
-	datapath dp(clk, reset,
-               PCSRC_M,
-	            ALUCONTROL_E, ALUSRC_E, REGDST_E,
-					ZERO_M,
-					REGWRITE_WB, MEMTOREG_WB,
-					instr, readdata,
-					pc,
-					aluresult,
-					writedata, instr_D);
+							.instr(instr_IF),
+							.pcplus4(pcplus4_IF));
+							
+	stage_decode decode (.clk(clk),
+	                     .reset(reset),
+								.instr(instr_DEC),
+								.regwrite_WB(regwrite_WB),
+								.result_WB(result_WB),
+								.writereg_WB(writereg_WB),
+								
+								.rt(rt_DEC),
+								.rd(rd_DEC),
+								.reg1(reg1_DEC),
+								.reg2(reg2_DEC),
+								.signimm(signimm_DEC));
+								
+	stage_execute execute (.clk(clk),
+	                       .reset(reset),
+								  .alusrc(alusrc_EXE),
+								  .regdst(regdst_EXE),
+								  .alucontrol(alucontrol_EXE),
+								  .reg1(reg1_EXE),
+								  .reg2(reg2_EXE),
+								  .rt(rt_EXE),
+								  .rd(rd_EXE),
+								  .signimm(signimm_EXE),
+								  .pcplus4(pcplus4_EXE),
+								  
+								  .aluresult(aluresult_EXE),
+								  .zero(zero_EXE),
+								  .overflow(overflow_EXE),
+								  .writereg(writereg_EXE),
+								  .writedata(writedata_EXE),
+								  .pcbranch(pcbranch_EXE));
+								  
+	stage_memory memory (.clk(clk),
+	                     .reset(reset),
+								.memwrite(memwrite_MEM),
+								.dataaddr(aluresult_MEM),
+								.writedata(writedata_MEM),
+								
+								.readdata(readdata_MEM));
+								
+	stage_writeback writeback (.memtoreg(memtoreg_WB),
+	                           .readdata(readdata_WB),
+										.aluresult(aluresult_WB),
+										.result(result_WB));
+								  
 endmodule 

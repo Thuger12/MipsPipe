@@ -1,2 +1,2 @@
 # MIPS
-f
+![alt text](mips.png "TIlt")
