@@ -21,7 +21,7 @@ module controller(input logic clk,
 						
 	// Signals from control unit after decode
 	logic regwrite_DEC, memtoreg_DEC, memwrite_DEC, 
-			branch_DEC, alusrc_DEC, regdst_DEC;
+		  branch_DEC, alusrc_DEC, regdst_DEC;
 	logic [2:0] alucontrol_DEC;
 	
 	logic regwrite_EXE, memtoreg_EXE, memwrite_EXE,
@@ -31,22 +31,22 @@ module controller(input logic clk,
 	
 	// Signal from maindecoder to aludecoder
 	logic [1:0] aluop;
-	
+
 	assign pcsrc_MEM = zero_MEM & branch_MEM;	
 
 	maindecoder maindecoder(.opcode(opcode),
-						         .regwrite_DEC(regwrite_DEC), 
-						         .memtoreg_DEC(memtoreg_DEC),
-					       	   .memwrite_DEC(memwrite_DEC), 
-						         .branch_DEC(branch_DEC),
-						         .alusrc_DEC(alusrc_DEC), 
-						         .regdst_DEC(regdst_DEC), 
-						         .aluop(aluop));
+						    .regwrite_DEC(regwrite_DEC), 
+						    .memtoreg_DEC(memtoreg_DEC),
+					       	.memwrite_DEC(memwrite_DEC), 
+						    .branch_DEC(branch_DEC),
+						    .alusrc_DEC(alusrc_DEC), 
+						    .regdst_DEC(regdst_DEC), 
+						    .aluop(aluop));
 						
 	
 	aludecoder aludecoder(.funct(funct), 
 	                      .aluop(aluop), 
-								 .alucontrol(alucontrol_DEC));
+						  .alucontrol(alucontrol_DEC));
 	
 	
 	flopper #(9) exec(clk, reset,
@@ -74,7 +74,6 @@ module controller(input logic clk,
 								  {regwrite_MEM, memtoreg_MEM},
 								  // Output
 								  {regwrite_WB, memtoreg_WB});
-
 endmodule
 
 
