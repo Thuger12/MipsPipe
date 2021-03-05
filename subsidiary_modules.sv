@@ -6,26 +6,7 @@
 //	-- multiplexor (2 x 1)
 
 
-module regfile(input logic clk,
-					input logic writeenable,
-					input logic [4:0] ra1, 
-					input logic [4:0] ra2, 
-					input logic [4:0] ra3,
-					input logic [31:0] wd3,
-					
-					output logic [31:0] rd1, 
-					output logic [31:0] rd2);
-	// Register matrices stores 32 of 32bits
-	logic [31:0] regf [31:0];
-	
-	// Seq logic, because writing only allow by clock
-	always_ff @(posedge clk)
-		if (writeenable) regf[ra3] <= wd3;
-	
-	// Combinational logic for ra1 and ra2
-	assign rd1 = (ra1 != 5'b0) ? regf[ra1] : 32'b0;
-	assign rd2 = (ra2 != 5'b0) ? regf[ra2] : 32'b0;
-endmodule
+
 
 
 module adder (input logic [31:0] a, 

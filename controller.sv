@@ -2,22 +2,22 @@ module controller(input logic clk,
                   input logic reset,
                   // Input
                   input logic [5:0] opcode,
-						input logic [5:0] funct,
+				  input logic [5:0] funct,
                   input logic zero_MEM,
 						
                   // For execute stage 
-						output logic alusrc_EXE, 
-						output logic regdst_EXE,
+	              output logic alusrc_EXE, 
+				  output logic regdst_EXE,
                   output logic [2:0] alucontrol_EXE,
 						
                   // For memwrite stage
              
-						output logic memwrite_MEM,
-						output logic pcsrc_MEM,
+				  output logic memwrite_MEM,
+				  output logic pcsrc_MEM,
 						
                   // For write back stage
                   output logic regwrite_WB, 
-						output logic memtoreg_WB);
+				  output logic memtoreg_WB);
 						
 	// Signals from control unit after decode
 	logic regwrite_DEC, memtoreg_DEC, memwrite_DEC, 
