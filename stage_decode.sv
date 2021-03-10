@@ -8,6 +8,7 @@ module stage_decode (input logic clk,
                     
                      output logic [4:0] rt,
                      output logic [4:0] rd,
+					 output logic [4:0] rs,
                      output logic [31:0] reg1, 
                      output logic [31:0] reg2,
                      output logic [31:0] signimm);
@@ -26,4 +27,5 @@ module stage_decode (input logic clk,
         
      assign rt = instr[20:16];
      assign rd = instr[15:11];
+	 assign rs = instr[25:21];
 endmodule 

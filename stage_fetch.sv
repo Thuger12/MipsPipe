@@ -1,5 +1,7 @@
 module stage_fetch (input logic clk,
                     input logic reset,
+					// Stall pipeline
+					input logic stall,
                     input logic [31:0] pcbranch,
                     input logic pcsrc,
                     output logic [31:0] instr,
@@ -15,6 +17,8 @@ module stage_fetch (input logic clk,
      
     flopper # (32) next_pc (.clk(clk), 
                             .reset(reset), 
+							.stall(stall),
+							.write_enable(~stall),
                             .d(pcnext), 
                             .q(pc)); 
       

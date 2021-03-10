@@ -5,6 +5,8 @@ module stage_execute (input logic clk,
                       input logic regdst,
                       input logic [2:0] alucontrol,
                       // Data
+					  input logic [31:0] aluresult_MEM,
+					  input logic [31:0] result_WB,
                       input logic [31:0] reg1, 
                       input logic [31:0] reg2,
                       input logic [4:0] rt, 
@@ -21,11 +23,23 @@ module stage_execute (input logic clk,
                       output logic [31:0] pcbranch);
 
     logic [31:0] srca, srcb;
-    assign srca = reg1;
-    assign writedata = reg2;
+	logic [31:0] reg2_n;
+    assign writedata = reg2_n;
      
+	 
+	mux3 # (32) m1 (.in1(reg1),
+	                .in2(result_WB),
+					.in3(aluresult_MEM),
+					.c(forward_A),
+					.out(srca));
+					
+    mux3 # (32) m2 (.in1(reg2),
+	                .in2(result_WB),
+					.in3(aluresult_MEM),
+					.c(forward_B),
+					.out(reg2_n));
     // Choose between register and sign immediate value
-    mux2 # (32) m1 (.in1(reg2), 
+    mux2 # (32) m1 (.in1(reg2_n), 
                     .in2(signimm), 
                     .c(alusrc), 
                     .out(srcb));
