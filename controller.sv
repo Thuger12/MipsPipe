@@ -1,5 +1,8 @@
 module controller(input logic clk, 
                   input logic reset,
+				  // To remove all signals, that could change arch state
+				  // memwrite, writeback, branch
+				  input logic stall,
                   // Input
                   input logic [5:0] opcode,
                   input logic [5:0] funct,
@@ -48,11 +51,17 @@ module controller(input logic clk,
                           .aluop(aluop), 
                           .alucontrol(alucontrol_DEC));
     
-    
-    flopper #(9) exec(clk, reset,
+	logic regwrite_DEC_n, memwrite_DEC_n, branch_DEC_n;
+	
+    mux2 # (3) stall_sigs (.in1({regwrite_DEC, memwrite_DEC, branch_DEC}),
+	                        .in2(3'b0),
+					        .c(stall),
+					        .out({regwrite_DEC_n, memwrite_DEC_n, branch_DEC_n}));
+					  
+    flopper #(9) exec(clk, reset, 
                         
-                            {regwrite_DEC, memtoreg_DEC,
-                             memwrite_DEC, branch_DEC,
+                            {regwrite_DEC_n, memtoreg_DEC,
+                             memwrite_DEC_n, branch_DEC_n,
                              alusrc_DEC, regdst_DEC,
                              alucontrol_DEC},
                         
@@ -69,7 +78,7 @@ module controller(input logic clk,
                               {regwrite_MEM, memtoreg_MEM,
                                memwrite_MEM, branch_MEM});
     
-    flopper #(2) writeback(clk, reset,
+    flopper #(2) writeback(clk, reset, 
                                   // Input
                                   {regwrite_MEM, memtoreg_MEM},
                                   // Output

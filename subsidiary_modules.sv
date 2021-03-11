@@ -39,17 +39,13 @@ endmodule
 module flopper # (parameter WIDTH = 8)
 				 (input logic clk, 
 				  input logic reset,
-				  input logic stall,
 				  input logic [WIDTH-1:0] d,
 				  output logic [WIDTH-1:0] q);
 						
-	always_ff @(posedge clk, posedge reset)
-	    if (stall == 1'b1) begin
-	
-		end else begin
-		        if (reset) q <= 0;
-		        else       q <= d;
-			end
+	always_ff @(posedge clk) begin
+       if (reset) q <= 0;
+		 else       q <= d;
+	end
 endmodule
 
 // Multipleksor 2 x 1
@@ -58,7 +54,29 @@ module mux2 # (parameter WIDTH = 8)
 				   input logic [WIDTH-1:0] in2,
 				   input logic c,
 					output logic [WIDTH-1:0] out);
-	assign out = c ? in2 : in1;
+	always_comb begin
+	    case (c)
+		    1'b1: out <= in2;
+			default: out <= in1;
+		endcase
+	end
+endmodule
+
+module mux3 # (parameter WIDTH = 8)
+              (input logic [WIDTH-1:0] in1,
+			   input logic [WIDTH-1:0] in2,
+			   input logic [WIDTH-1:0] in3,
+			   input logic [1:0] c,
+			   output logic [WIDTH-1:0] out);
+			
+    always_comb begin
+	    case (c)
+		    2'b00: out <= in1;
+		    2'b01: out <= in2;
+			 2'b10: out <= in3;
+			default: out <= in1;
+		endcase			
+	end
 endmodule
 
 module alu # (parameter WIDTH = 8)

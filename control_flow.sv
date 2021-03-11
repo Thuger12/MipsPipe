@@ -9,15 +9,20 @@ module control_flow (input logic memtoreg_MEM,
 					 input logic [4:0] rt_EXE,
                      output logic stall_IF,
 					 output logic stall_DEC,
-					 output logic flush_EXE
+					 output logic flush_EXE,
 					 output logic flush_control_signals);
 					   
 	always_comb begin	
         if (memtoreg_MEM && (rs_DEC == rt_EXE) || (rt_DEC == rt_EXE)) begin
-		    stall_IF <= 1;
+		   stall_IF <= 1;
 			stall_DEC <= 1;
 			flush_EXE <= 1;
 			flush_control_signals <= 1;
-        end		
+        end else begin
+		          stall_IF <= 0;
+					 stall_DEC <= 0;
+					 flush_EXE <= 0;
+					 flush_control_signals <= 0;
+		      end  
 	end
 endmodule 

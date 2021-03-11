@@ -14,27 +14,28 @@ module bypass (input logic reset,
 	logic cond_1, cond_2, cond_3, cond_4;
 	assign cond_1 = ex_mem_regwrite && (ex_mem_rd != 0) && (ex_mem_rd == dec_ex_rs);
 	assign cond_2 = ex_mem_regwrite && (ex_mem_rd != 0) && (ex_mem_rd == dec_ex_rt);
-	assign cond_3 = mem_wb_regwrite && (mem_wb_rd != 0) 
-            && !(ex_mem_regwrite && (ex_mem_rd != 0) && (ex_mem_rd != dec_ex_rs)) 
-            && (mem_wb_rd == dec_ex_rs);
+	assign cond_3 = mem_wb_regwrite 
+	                && (mem_wb_rd != 0)
+                    && (mem_wb_rd == dec_ex_rs);
     assign cond_4 = mem_wb_regwrite 
-            && (mem_wb_rd != 0) 
-            && !(ex_mem_regwrite && (ex_mem_rd != 0) && (ex_mem_rd != dec_ex_rs)) 
-            && (mem_wb_rd == dec_ex_rt);
+                    && (mem_wb_rd != 0)
+                    && (mem_wb_rd == dec_ex_rt);
     always_comb begin
         if (cond_1) begin
             forward_a <= 2'b10;
         end 
-		if (cond_2) begin
-            forward_b <= 2'b10;
+		else if (cond_2) begin
+             forward_b <= 2'b10;
+		     end
+        else if (cond_3) begin
+             forward_a <= 2'b01;
+             end 
+		else if (cond_4) begin
+             forward_b <= 2'b01;
+             end
+		else begin
+		    forward_a <= 2'b0;
+			forward_b <= 2'b0;
 		end
-        if (cond_3) begin
-            forward_a <= 2'b01;
-        end 
-		if (cond_4) begin
-            forward_b <= 2'b01;
-        end
-		
 	end
-	
 endmodule 

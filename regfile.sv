@@ -21,7 +21,7 @@ module regfile(input logic clk,
 	
 	integer i;
 	
-	always @(halt) begin
+	always_ff @(negedge clk) begin
 	    $display("***Register file***");
 			
 		 for (i = 0; i < 32; i = i + 1) begin

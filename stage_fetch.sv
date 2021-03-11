@@ -15,10 +15,8 @@ module stage_fetch (input logic clk,
                     .c(pcsrc),
                     .out(pcnext));
      
-    flopper # (32) next_pc (.clk(clk), 
-                            .reset(reset), 
-							.stall(stall),
-							.write_enable(~stall),
+    flopper # (32) next_pc (.clk(clk),
+							.reset(reset),
                             .d(pcnext), 
                             .q(pc)); 
       

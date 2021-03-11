@@ -5,8 +5,7 @@ module stage_execute (input logic clk,
                       input logic regdst,
                       input logic [2:0] alucontrol,
                       // Data
-					  input logic [31:0] aluresult_MEM,
-					  input logic [31:0] result_WB,
+					  
                       input logic [31:0] reg1, 
                       input logic [31:0] reg2,
                       input logic [4:0] rt, 
@@ -27,17 +26,18 @@ module stage_execute (input logic clk,
     assign writedata = reg2_n;
      
 	 
-	mux3 # (32) m1 (.in1(reg1),
+	mux3 # (32) bypass1 (.in1(reg1),
 	                .in2(result_WB),
 					.in3(aluresult_MEM),
 					.c(forward_A),
 					.out(srca));
 					
-    mux3 # (32) m2 (.in1(reg2),
+    mux3 # (32) bypass2 (.in1(reg2),
 	                .in2(result_WB),
 					.in3(aluresult_MEM),
 					.c(forward_B),
 					.out(reg2_n));
+					
     // Choose between register and sign immediate value
     mux2 # (32) m1 (.in1(reg2_n), 
                     .in2(signimm), 

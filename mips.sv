@@ -1,5 +1,6 @@
 module mips(input logic clk, 
-            input logic reset);
+            input logic reset,
+				input logic clear);
                 
     // Signals for execute stage
     logic alusrc_EXE, regdst_EXE;
@@ -16,10 +17,10 @@ module mips(input logic clk,
     
     logic [31:0] instr_DEC, pcplus4_DEC;
     logic [31:0] reg1_DEC, reg2_DEC, signimm_DEC;
-    logic [4:0] rt_DEC, rd_DEC;
+    logic [4:0] rt_DEC, rd_DEC, rs_DEC;
     
     logic [31:0] reg1_EXE, reg2_EXE, signimm_EXE, pcplus4_EXE;
-    logic [4:0] rt_EXE, rd_EXE;
+    logic [4:0] rt_EXE, rd_EXE, rs_EXE;
     logic [4:0] writereg_EXE;
     logic [31:0] aluresult_EXE, writedata_EXE, pcbranch_EXE;
     logic zero_EXE, overflow_EXE;
@@ -33,8 +34,11 @@ module mips(input logic clk,
     logic [31:0] result_WB;
     logic [4:0]  writereg_WB;
                           
+	 logic stall;
+
     controller control (.clk(clk),
                         .reset(reset),
+								.stall(stall),
                         .opcode(instr_DEC[31:26]),
                         .funct(instr_DEC[5:0]),
                         .zero_MEM(zero_MEM),
@@ -50,6 +54,7 @@ module mips(input logic clk,
     // 
     latch_fetch latch_fetch (.clk(clk),
                              .reset(reset),
+									  .stall(stall),
                              .instr_IF(instr_IF),
                              .pcplus4_IF(pcplus4_IF),
                              
@@ -58,10 +63,12 @@ module mips(input logic clk,
     
     latch_decode latch_decode (.clk(clk),
                                .reset(reset),
+										 .clear(clear),
                                .reg1_DEC(reg1_DEC),
                                .reg2_DEC(reg2_DEC),
                                .rt_DEC(rt_DEC),
                                .rd_DEC(rd_DEC),
+							   .rs_DEC(rs_DEC),
                                .signimm_DEC(signimm_DEC),
                                .pcplus4_DEC(pcplus4_DEC),
                                 
@@ -69,6 +76,7 @@ module mips(input logic clk,
                                .reg2_EXE(reg2_EXE),
                                .rt_EXE(rt_EXE),
                                .rd_EXE(rd_EXE),
+							   .rs_EXE(rs_EXE),
                                .signimm_EXE(signimm_EXE),
                                .pcplus4_EXE(pcplus4_EXE));
                                 
@@ -103,6 +111,7 @@ module mips(input logic clk,
     
     stage_fetch fetch (.clk(clk),
                        .reset(reset),
+							  .stall(stall),
                        .pcbranch(pcbranch_MEM),
                        .pcsrc(pcsrc_MEM),
                             
@@ -118,6 +127,7 @@ module mips(input logic clk,
                                 
                          .rt(rt_DEC),
                          .rd(rd_DEC),
+						 .rs(rs_DEC),
                          .reg1(reg1_DEC),
                          .reg2(reg2_DEC),
                          .signimm(signimm_DEC));
