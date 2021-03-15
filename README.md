@@ -1,2 +1,2 @@
 # MIPS
-![alt text](MIPS-ISA.png "TIlt")
+![alt text](MIPS.png "TIlt")
