@@ -1,8 +1,10 @@
 *.bak
-db/
-incremental_db/
 *.qsf
 *.qws
+*.qpf
+*.db
 output_files/
 simulation/
+db/
+incremental_db/
 
