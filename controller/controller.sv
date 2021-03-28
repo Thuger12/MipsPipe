@@ -14,7 +14,7 @@ module controller(input logic clk,
                   output logic [2:0] alucontrol_EXE,
                         
                   // For memwrite stage
-             
+                  output logic regwrite_MEM,
                   output logic memwrite_MEM,
                   output logic pcsrc_MEM,
                         
@@ -30,7 +30,7 @@ module controller(input logic clk,
     logic regwrite_EXE, memtoreg_EXE, memwrite_EXE,
           branch_EXE;
             
-    logic regwrite_MEM, memtoreg_MEM, branch_MEM;
+    logic memtoreg_MEM, branch_MEM;
     
     // Signal from maindecoder to aludecoder
     logic [1:0] aluop;

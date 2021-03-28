@@ -1,13 +1,13 @@
 module mips(input logic clk, 
             input logic reset,
-				input logic clear);
+			input logic clear);
                 
     // Signals for execute stage
     logic alusrc_EXE, regdst_EXE;
     logic [2:0] alucontrol_EXE;
     
     // Signals for memory stage
-    logic memwrite_MEM, pcsrc_MEM;  
+    logic regwrite_MEM, memwrite_MEM, pcsrc_MEM;  
 
     // Signals for writeback stage
     logic regwrite_WB, memtoreg_WB;
@@ -36,6 +36,19 @@ module mips(input logic clk,
                           
 	 logic stall;
 
+    logic [1:0] forward_a, forward_b;
+
+    bypass bypass(.dec_ex_rs(rs_EXE),
+                  .dec_ex_rt(rt_EXE),
+                  .ex_mem_rd(writereg_MEM),
+                  .mem_wb_rd(writereg_WB),
+
+                  .ex_mem_regwrite(regwrite_MEM),
+                  .mem_wb_regwrite(regwrite_WB),
+                  
+                  .forward_a(forward_a),
+                  .forward_b(forward_b));
+
     controller control (.clk(clk),
                         .reset(reset),
 								.stall(stall),
@@ -45,6 +58,7 @@ module mips(input logic clk,
                         .alusrc_EXE(alusrc_EXE),
                         .regdst_EXE(regdst_EXE),
                         .alucontrol_EXE(alucontrol_EXE),
+                        .regwrite_MEM(regwrite_MEM),
                         .memwrite_MEM(memwrite_MEM),
                         .pcsrc_MEM(pcsrc_MEM),
                         .regwrite_WB(regwrite_WB),
@@ -143,6 +157,11 @@ module mips(input logic clk,
                            .rd(rd_EXE),
                            .signimm(signimm_EXE),
                            .pcplus4(pcplus4_EXE),
+                           
+                           .aluresult_MEM(aluresult_MEM),
+                           .result_WB(result_WB),
+                           .forward_a(forward_a),
+                           .forward_b(forward_b),
                                   
                            .aluresult(aluresult_EXE),
                            .zero(zero_EXE),

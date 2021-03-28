@@ -5,13 +5,20 @@ module stage_execute (input logic clk,
                       input logic regdst,
                       input logic [2:0] alucontrol,
                       // Data
-					  
                       input logic [31:0] reg1, 
                       input logic [31:0] reg2,
                       input logic [4:0] rt, 
                       input logic [4:0] rd,
                       input logic [31:0] signimm, 
                       input logic [31:0] pcplus4,
+
+                      // For bypass
+                      // Data
+                      input logic [31:0] aluresult_MEM,
+                      input logic [31:0] result_WB,
+                      // Signals
+                      input logic [1:0] forward_a,
+                      input logic [1:0] forward_b,
 
                       output logic [31:0] aluresult,
                       output logic zero,

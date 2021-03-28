@@ -15,33 +15,6 @@
  * data[31:0]
  * ready 
  */
-module peripheral_select(input logic memwrite,
-                         input logic [31:0] addr,
-                         input logic [31:0] writedata,
-                       
-                         // Will define which peripheral we want to use
-                         output logic [1:0] pselect);
-    // Low and high bound of MMIO segment
-    localparam mmio_low = 32'hffff0000;
-    localparam mmio_high = 32'hffff0010;
-
-    localparam uart = 32'hffff0000;
-    localparam ethernet_in = 32'hffff0008;
-    
-    always_comb begin
-        if (addr <= mmio_high && addr >= mmio_low) begin
-            // Assume that address already aligned
-            case addr:
-                uart: pselect = 2'b10;
-                ethernet: pselect = 2'b11;
-                default: begin
-                    pselect = 2'b00;
-                end
-        end else begin
-                pselect = 2'b01;
-            end
-    end
-endmodule
 
 /*
  * This module will control signals like 
@@ -56,7 +29,7 @@ module databus_control(input logic clk,
                        input logic [31:0] addr,
                        input logic [31:0] writedata,
                        // It will define what to do(read or write) 
-                       input logic memwrite
+                       input logic memwrite,
 
                        // Signals on bus from peripherals
                        input logic pready,
@@ -71,9 +44,9 @@ module databus_control(input logic clk,
     localparam wait_req = 1;
 
     logic [1:0] _pselect;
-    peripheral_select pselect(.addr(addr),
-                              .writedata(writedata),
-                              .pselect(_pselect));
+    peripheral_select p_select(.addr(addr),
+                               .writedata(writedata),
+                               .pselect(_pselect));
 
     always_ff @(posedge clk) begin
         if (reset) begin
@@ -83,26 +56,28 @@ module databus_control(input logic clk,
             end
     end
     always_comb begin
-        case state
-        idle: begin
-            if (addr && data) begin
-                pwrite_read = (memwrite == 1) 1 : 0;
-                pselect = _pselect;
-                next_state = wait_req;
-            end else begin
+        case (state)
+            idle: begin
+                if (addr && writedata) begin
+                    pwrite_read = (memwrite == 1) ? 1 : 0;
+                    pselect = _pselect;
+                    next_state = wait_req;
+                end else begin
+                        pwrite_read = 0;
+                        pselect = 0;
+                        next_state = idle;
+                    end
+            end
+            wait_req: begin
+                if (pready == 1) begin
+                    // Peripheral is ready => data is ready
                     pwrite_read = 0;
                     pselect = 0;
                     next_state = idle;
-                end
-        end
-        wait_req: begin
-            if (pready == 1) begin
-                // Peripheral is ready => data is ready
-                write_read = 0;
-                pselect = 0;
-            end else begin
-                    next_state = wait_req;
-                end
-        end
+                end else begin
+                        next_state = wait_req;
+                    end
+            end
+        endcase
     end
 endmodule 

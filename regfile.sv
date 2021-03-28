@@ -1,16 +1,16 @@
 module regfile(input logic clk,
-					input logic writeenable,
-					input logic halt,
-					input logic [4:0] ra1, 
-					input logic [4:0] ra2, 
-					input logic [4:0] ra3,
-					input logic [31:0] wd3,
-					
-					output logic [31:0] rd1, 
-					output logic [31:0] rd2);
+			   input logic writeenable,
+			   input logic halt,
+               input logic [4:0] ra1, 
+               input logic [4:0] ra2, 
+               input logic [4:0] ra3,
+               input logic [31:0] wd3,
+                
+               output logic [31:0] rd1, 
+               output logic [31:0] rd2);
 	// Register matrices stores 32 of 32bits
 	logic [31:0] regf [0:31];
-	
+
 	// Seq logic, because writing only allow by clock
 	always_ff @(posedge clk) begin
 		if (writeenable) regf[ra3] <= wd3;
