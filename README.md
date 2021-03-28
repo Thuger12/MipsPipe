@@ -7,7 +7,7 @@ Mips-ish processor with 5 stage pipeline.
 
 ### Others modules(not included in main processor)
 * MMIO for UART and Ethernet. Something like that:
-![alt-text](mmio/mmio.jpg "MMIO")
+![alt-text](mmio.jpg "MMIO")
 * Actually you should see how for real buses work(APB for example)
 ### Other stuff to implement, but not include
 * Out of order execution(Tomasulo algorithm).
